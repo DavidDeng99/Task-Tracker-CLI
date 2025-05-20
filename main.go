@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -23,44 +22,30 @@ const INVALID = "Invalid command - type help for more info"
 
 func main() {
 	tasks := load()
-	fmt.Println("Welcome to Task Tracker CLI - type \"exit\" to quit")
-
-	reader := bufio.NewScanner(os.Stdin)
-
-	for {
-		fmt.Print("> ")
-		if reader.Scan() {
-			line := reader.Text()
-			args := strings.Fields(line)
-			switch args[0] {
-			case "add":
-				add(strings.Join(args[1:], " "), &tasks)
-			case "delete":
-				id, _ := strconv.Atoi(args[1])
-				delete(id, &tasks)
-			case "update":
-				id, _ := strconv.Atoi(args[1])
-				update(id, strings.Join(args[2:], " "), &tasks)
-			case "mark-in-progress":
-				id, _ := strconv.Atoi(args[1])
-				mark(id, &tasks, "in-progress")
-			case "mark-done":
-				id, _ := strconv.Atoi(args[1])
-				mark(id, &tasks, "done")
-			case "list":
-				if len(args) == 1 {
-					listAll(&tasks)
-				} else {
-					listFiltered(&tasks, args[1])
-				}
-			case "exit":
-				os.Exit(0)
-			default:
-				fmt.Println(INVALID)
-			}
+	args := os.Args
+	switch args[1] {
+	case "add":
+		add(strings.ReplaceAll(strings.Join(args[2:], " "), "\"", ""), &tasks)
+	case "delete":
+		id, _ := strconv.Atoi(args[2])
+		delete(id, &tasks)
+	case "update":
+		id, _ := strconv.Atoi(args[2])
+		update(id, strings.ReplaceAll(strings.Join(args[3:], " "), "\"", ""), &tasks)
+	case "mark-in-progress":
+		id, _ := strconv.Atoi(args[2])
+		mark(id, &tasks, "in-progress")
+	case "mark-done":
+		id, _ := strconv.Atoi(args[2])
+		mark(id, &tasks, "done")
+	case "list":
+		if len(args) == 2 {
+			listAll(&tasks)
+		} else {
+			listFiltered(&tasks, args[2])
 		}
-		save(&tasks)
 	}
+	save(&tasks)
 }
 
 func add(task string, tasks *[]Task) {
